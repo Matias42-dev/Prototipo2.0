@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prototipo - Asistencia x Materia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    :root{--bg:#f6f8fb;--card:#fff;--accent:#0f62fe;--muted:#6b7280;--danger:#b00020;--ok:#036a31}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:#111}
+    header{background:var(--accent);color:#fff;padding:18px 24px;font-weight:700;font-size:20px}
+    .container{max-width:1100px;margin:20px auto;padding:16px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px}
+    .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(12,24,60,0.06)}
+    h2{margin:0 0 10px 0;font-size:18px}
+    label{font-size:13px;color:var(--muted)}
+    select,input[type=text]{width:100%;padding:8px;margin:6px 0 12px;border-radius:6px;border:1px solid #e6e9ef}
+    button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    ul{padding-left:18px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f1f3f6;text-align:left;font-size:14px}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:600}
+    .danger{background:#ffeceb;color:var(--danger)}
+    .ok{background:#ecfdf5;color:var(--ok)}
+    .center{display:flex;align-items:center;gap:8px}
+    .qrbox{display:flex;flex-direction:column;gap:8px;align-items:center}
+    .token{font-family:monospace;background:#f3f4f6;padding:6px 10px;border-radius:8px}
+    .note{font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+<header>Asistencia x Materia - Prototipo</header>
+<main class="container">
+<div class="grid">
+<section class="card">
+<h2>Acceso / Roles</h2>
+<label>Elegir rol</label>
+<select id="role">
+<option value="student">Estudiante</option>
+<option value="teacher">Docente</option>
+<option value="admin">Administrativo</option>
+</select>
+<label>Seleccionar usuario</label>
+<select id="userSelect"></select>
+<div style="display:flex;gap:8px;margin-top:8px">
+<button id="loginBtn">Iniciar sesión</button>
+<button id="logoutBtn" style="display:none;background:#64748b">Cerrar sesión</button>
+</div>
+<hr style="margin:12px 0">
+<div id="dashboardArea" style="display:none">
+<div id="studentView" style="display:none">
+<h2>Registro de asistencia</h2>
+<label>Materias a las que estás inscripto</label>
+<select id="studentClasses"></select>
+<div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+<button id="simulateScan">Simular escaneo QR</button>
+<button id="manualRegister">Registrar manual</button>
+</div>
+<p class="note">Al registrar, la asistencia queda guardada y podrá ser validada por el docente.</p>
+<h3 style="margin-top:14px">Tu historial</h3>
+<table id="studentHistory"><thead><tr><th>Materia</th><th>Fecha</th><th>Estado</th></tr></thead><tbody></tbody></table>
+</div>
+<div id="teacherView" style="display:none">
+<h2>Panel docente</h2>
+<label>Clase actual</label>
+<select id="teacherClasses"></select>
+<div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+<button id="showQR">Mostrar QR de clase</button>
+<button id="confirmAll">Confirmar asistencias</button>
+</div>
+<h3 style="margin-top:12px">Alumnos registrados</h3>
+<table id="teacherList"><thead><tr><th>Alumno</th><th>Registrado</th><th>Validado</th></tr></thead><tbody></tbody></table>
+<p class="note">Confirmar las asistencias valida oficialmente cada registro.</p>
+</div>
+<div id="adminView" style="display:none">
+<h2>Panel administrativo</h2>
+<p class="note">Alertas de faltas y reportes globales</p>
+<h3>Alertas</h3>
+<div id="alerts"></div>
+<h3 style="margin-top:10px">Reporte resumido</h3>
+<table id="adminReport"><thead><tr><th>Alumno</th><th>Materia</th><th>Faltas</th></tr></thead><tbody></tbody></table>
+</div>
+</div>
+</section>
+<aside class="card">
+<h2>Instrucciones rápidas</h2>
+<ul>
+<li>Elegí rol y usuario → Iniciar sesión.</li>
+<li>Como docente: generá código QR y los alumnos podrán escanearlo.</li>
+<li>Como alumno: seleccioná materia y "Simular escaneo" o registrar manual.</li>
+<li>Como administrativo: revisá alertas y confirmá reportes.</li>
+</ul>
+<hr>
+<h3>Datos de ejemplo</h3>
+<div class="note">3 alumnos: Ana, Luis, María.<br>2 docentes: Prof. Juárez, Prof. Sánchez.<br>Materias: Prog 1, Bases.</div>
+<hr>
+<h3>Umbral de faltas</h3>
+<p class="note">Si un alumno supera <strong>3 faltas</strong>, se genera una alerta.</p>
+</aside>
+</div>
+</main>
+<div id="qrModal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.4)">
+<div style="background:#fff;padding:18px;border-radius:10px;min-width:320px;text-align:center">
+<h3>QR de la clase</h3>
+<div id="qrReader" style="width:220px"></div>
+<div class="token" id="qrToken"></div>
+<div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+<button id="closeQr">Cerrar</button>
+</div>
+</div>
+</div>
+<script>
+const DB={students:[{id:'ana',name:'Ana López'},{id:'luis',name:'Luis García'},{id:'maria',name:'María Pérez'}],teachers:[{id:'prof_j',name:'Prof. Juárez'},{id:'prof_s',name:'Prof. Sánchez'}],classes:[{id:'c1',name:'Prog 1',teacher:'prof_j'},{id:'c2',name:'Bases',teacher:'prof_s'}],enrollments:{'ana':['c1','c2'],'luis':['c1'],'maria':['c2']},attendance:JSON.parse(localStorage.getItem('attendance')||'[]')};
+const ABSENCE_THRESHOLD=3;
+const el=id=>document.getElementById(id);
+function saveAttendance(){localStorage.setItem('attendance',JSON.stringify(DB.attendance));}
+function populateUserSelect(){const role=el('role').value,sel=el('userSelect');sel.innerHTML='';if(role==='student')DB.students.forEach(s=>{let o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o)});else if(role==='teacher')DB.teachers.forEach(t=>{let o=document.createElement('option');o.value=t.id;o.textContent=t.name;sel.appendChild(o)});else{let o=document.createElement('option');o.value='admin';o.textContent='Administrativo';sel.appendChild(o)}}
+el('role').addEventListener('change',populateUserSelect);populateUserSelect();
+let currentUser=null,currentRole=null,currentQRToken=null;
+el('loginBtn').addEventListener('click',()=>{currentRole=el('role').value;currentUser=el('userSelect').value;el('dashboardArea').style.display='block';el('logoutBtn').style.display='inline-block';el('loginBtn').style.display='none';el('role').disabled=true;el('userSelect').disabled=true;renderForRole();});
+el('logoutBtn').addEventListener('click',()=>{location.reload();});
+function renderForRole(){el('studentView').style.display='none';el('teacherView').style.display='none';el('adminView').style.display='none';if(currentRole==='student')renderStudentView();if(currentRole==='teacher')renderTeacherView();if(currentRole==='admin')renderAdminView();}
+function renderStudentView(){el('studentView').style.display='block';const clsSel=el('studentClasses');clsSel.innerHTML='';(DB.enrollments[currentUser]||[]).forEach(cid=>{let c=DB.classes.find(x=>x.id===cid);let o=document.createElement('option');o.value=cid;o.textContent=c.name;clsSel.appendChild(o)});renderStudentHistory();}
+function renderStudentHistory(){const tb=el('studentHistory').querySelector('tbody');tb.innerHTML='';DB.attendance.filter(a=>a.student===currentUser).sort((a,b)=>b.dateISO.localeCompare(a.dateISO)).forEach(r=>{let tr=document.createElement('tr');tr.innerHTML=`<td>${DB.classes.find(c=>c.id===r.classId).name}</td><td>${new Date(r.dateISO).toLocaleString()}</td><td>${r.validated?'<span class="ok badge">Validado</span>':'<span class="badge">Registrado</span>'}</td>`;tb.appendChild(tr)});
+}
+el('simulateScan').addEventListener('click',()=>{const selected=el('studentClasses').value;if(!selected){alert('Selecciona una materia');return;}if(!currentQRToken){alert('No hay QR activo');return;}DB.attendance.push({student:currentUser,classId:selected,dateISO:new Date().toISOString(),validated:false});saveAttendance();renderStudentHistory();alert('Asistencia registrada correctamente.');renderTeacherView();renderAdminView();});
+el('manualRegister').addEventListener('click',()=>{const selected=el('studentClasses').value;if(!selected){alert('Selecciona una materia');return;}DB.attendance.push({student:currentUser,classId:selected,dateISO:new Date().toISOString(),validated:false});saveAttendance();renderStudentHistory();alert('Asistencia registrada manualmente.');renderTeacherView();renderAdminView();});
+function renderTeacherView(){el('teacherView').style.display='block';const sel=el('teacherClasses');sel.innerHTML='';DB.classes.filter(c=>c.teacher===currentUser).forEach(c=>{let o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o)});renderTeacherList();}
+function renderTeacherList(){const tb=el('teacherList').querySelector('tbody');tb.innerHTML='';const selectedClass=el('teacherClasses').value;if(!selectedClass) return;DB.attendance.filter(a=>DB.classes.find(c=>c.id===selectedClass).teacher===currentUser && a.classId===selectedClass).forEach(a=>{let tr=document.createElement('tr');let studentName=DB.students.find(s=>s.id===a.student).name;tr.innerHTML=`<td>${studentName}</td><td>Registrado</td><td>${a.validated?'<span class="ok badge">Validado</span>':'<span class="badge">Pendiente</span>'}</td>`;tb.appendChild(tr)});
+}
+el('teacherClasses').addEventListener('change',renderTeacherList);
+el('showQR').addEventListener('click',()=>{currentQRToken=Math.random().toString(36).substring(2,8);el('qrToken').textContent=currentQRToken;el('qrModal').style.display='flex';});
+el('closeQr').addEventListener('click',()=>{el('qrModal').style.display='none';});
+el('confirmAll').addEventListener('click',()=>{DB.attendance.filter(a=>DB.classes.find(c=>c.id===a.classId).teacher===currentUser).forEach(a=>a.validated=true);saveAttendance();alert('Asistencias confirmadas');renderStudentHistory();renderTeacherList();renderAdminView();});
+function renderAdminView(){el('adminView').style.display='block';const alerts=el('alerts');alerts.innerHTML='';const reportBody=el('adminReport').querySelector('tbody');reportBody.innerHTML='';DB.students.forEach(s=>{(DB.enrollments[s.id]||[]).forEach(cid=>{const abs=DB.attendance.filter(a=>a.student===s.id && a.classId===cid && !a.validated).length;if(abs>ABSENCE_THRESHOLD){let d=document.createElement('div');d.className='danger badge';d.textContent=`${s.name} supera ${ABSENCE_THRESHOLD} faltas en ${DB.classes.find(c=>c.id===cid).name}`;alerts.appendChild(d);}let tr=document.createElement('tr');tr.innerHTML=`<td>${s.name}</td><td>${DB.classes.find(c=>c.id===cid).name}</td><td>${abs}</td>`;reportBody.appendChild(tr);});});}
+</script>
+</body>
+</html>
